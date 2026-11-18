@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sigcem
+      POSTGRES_USER: sigcem
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no arquivo .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigcem -d sigcem"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://sigcem:${POSTGRES_PASSWORD}@db:5432/sigcem
+      SECRET_KEY: ${SECRET_KEY:?defina SECRET_KEY no arquivo .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      STORAGE_DIR: /app/storage
+      BACKUP_DIR: /app/backups
+    volumes:
+      - ./storage:/app/storage
+      - ./backups:/app/backups
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"   # coloque um proxy HTTPS (nginx/Caddy/Traefik) na frente em produção
+
+volumes:
+  pgdata:

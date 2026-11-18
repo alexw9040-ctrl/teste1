@@ -1,0 +1,32 @@
+# Segredos e ambiente
+.env
+.env.*
+!.env.example
+
+# Dados reais — nunca versionar
+storage/*
+!storage/.gitkeep
+backups/*
+!backups/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Sistema / editor
+.DS_Store
+.idea/
+.vscode/
